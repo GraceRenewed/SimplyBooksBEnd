@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace CreekRiver.Models;
+namespace SimplyBooksBEnd.Models;
 
-public class Campsite
+public class Author
 {
     [Key]
     public string firebaseKey { get; set; }

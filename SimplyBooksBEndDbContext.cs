@@ -1,14 +1,15 @@
 using Microsoft.EntityFrameworkCore;
+using System;
 using SimplyBooksBEnd.Models;
 using System.Collections.Generic;
 
 public class SimplyBooksBEndDbContext : DbContext
 {
 
-    public DbSet<Reservation> Reservations { get; set; }
-    public DbSet<UserProfile> UserProfiles { get; set; }
-    public DbSet<Campsite> Campsites { get; set; }
-    public DbSet<CampsiteType> CampsiteTypes { get; set; }
+    public DbSet<Author> Authors { get; set; }
+    public DbSet<Book> Books { get; set; }
+    public DbSet<User> Users { get; set; }
+    
 
     public SimplyBooksBEndDbContext(DbContextOptions<SimplyBooksBEndDbContext> context) : base(context)
     {
@@ -45,7 +46,7 @@ public class SimplyBooksBEndDbContext : DbContext
                 last_name = "Kingsbury",
                 email = "karenkingsbury@example.com",
                 favorite = false
-            }
+            },
         });
 
         // seed data for book
@@ -83,7 +84,8 @@ public class SimplyBooksBEndDbContext : DbContext
                 image = "image_url3",
                 price = 10.99m,
                 sale = true
-            }
+            },
+        });
 
         // seed data for user
         modelBuilder.Entity<User>().HasData(new User[]
@@ -100,7 +102,6 @@ public class SimplyBooksBEndDbContext : DbContext
                 Authors = new List<Author>(),  
                 Books = new List<Book>(),      
             }
-
         });
     }
 }
