@@ -1,0 +1,6 @@
+@SimplyBooksBEnd_HostAddress = http://localhost:5152
+
+GET {{SimplyBooksBEnd_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
