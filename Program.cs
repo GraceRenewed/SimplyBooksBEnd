@@ -33,29 +33,56 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
+app.MapGet("/authors", (SimplyBooksBEndDbContext db) =>
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+    return db.Authors.ToList();
+});
 
-app.MapGet("/weatherforecast", () =>
+app.MapGet("authors/{userUid}", (SimplyBooksBEndDbContext db, string userUid) =>
 {
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast")
-.WithOpenApi();
+    return db.Authors
+        .Include(a => a.Books)
+        .Where(a => a.UserUid == userUid)
+        .ToList();
+});
+
+app.MapPost("/authors", (SimplyBooksBEndDbContext db, Author author) =>
+{
+    db.Authors.Add(author);
+    db.SaveChanges();
+    return Results.Created($"/authors/{author.firebaseKey}", author);
+});
+
+app.MapDelete("/authors/{firebaseKey}", (SimplyBooksBEndDbContext db, string firebaseKey) =>
+{
+    Author author = db.Authors.SingleOrDefault(author => author.firebaseKey == firebaseKey);
+    if (author == null)
+    {
+        return Results.NotFound();
+    }
+    db.Authors.Remove(author);
+    db.SaveChanges();
+    return Results.NoContent();
+
+});
+
+app.MapGet("/books", (SimplyBooksBEndDbContext db) =>
+{
+    return db.Books
+        .Include(a => a.Author)
+        .ToList();
+});
+
+app.MapGet("books/{userUid}", (SimplyBooksBEndDbContext db, string userUid) =>
+{
+    return db.Books
+        .Include(a => a.Author)
+        .Where(a => a.UserUid == userUid)
+        .ToList();
+});
+
+// .WithName("GetWeatherForecast")
+// .WithOpenApi();
 
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
