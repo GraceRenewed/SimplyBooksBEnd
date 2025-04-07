@@ -38,12 +38,12 @@ app.MapGet("/authors", (SimplyBooksBEndDbContext db) =>
     return db.Authors.ToList();
 });
 
-app.MapGet("authors/{userUid}", (SimplyBooksBEndDbContext db, string userUid) =>
+app.MapGet("author/{firebaseKey}", (SimplyBooksBEndDbContext db, string firebaseKey) =>
 {
     return db.Authors
-        .Include(a => a.Books)
-        .Where(a => a.UserUid == userUid)
-        .ToList();
+    .Include(a => a.Books)
+    .Where(a => a.firebaseKey == firebaseKey)
+    .ToList();
 });
 
 app.MapPost("/authors", (SimplyBooksBEndDbContext db, Author author) =>
@@ -66,6 +66,22 @@ app.MapDelete("/authors/{firebaseKey}", (SimplyBooksBEndDbContext db, string fir
 
 });
 
+app.MapPut("/authors/{firebaseKey}", (SimplyBooksBEndDbContext db, string firebaseKey, Author author) =>
+{
+    Author authorToUpdate = db.Authors.SingleOrDefault(author => author.firebaseKey == firebaseKey);
+    if (authorToUpdate == null)
+    {
+        return Results.NotFound();
+    }
+    authorToUpdate.first_name = author.first_name;
+    authorToUpdate.last_name = author.last_name;
+    authorToUpdate.email = author.email;
+    authorToUpdate.favorite = author.favorite;
+
+    db.SaveChanges();
+    return Results.NoContent();
+});
+
 app.MapGet("/books", (SimplyBooksBEndDbContext db) =>
 {
     return db.Books
@@ -73,14 +89,65 @@ app.MapGet("/books", (SimplyBooksBEndDbContext db) =>
         .ToList();
 });
 
-app.MapGet("books/{userUid}", (SimplyBooksBEndDbContext db, string userUid) =>
+app.MapGet("book/{firebaseKey}", (SimplyBooksBEndDbContext db, string firebaseKey) =>
 {
     return db.Books
         .Include(a => a.Author)
+        .Where(a => a.firebaseKey == firebaseKey)
+        .ToList();
+});
+
+app.MapPost("/books", (SimplyBooksBEndDbContext db, Book book) =>
+{
+    db.Books.Add(book);
+    db.SaveChanges();
+    return Results.Created($"/books/{book.firebaseKey}", book);
+});
+
+app.MapDelete("/books/{firebaseKey}", (SimplyBooksBEndDbContext db, string firebaseKey) =>
+{
+    Book book = db.Books.SingleOrDefault(book => book.firebaseKey == firebaseKey);
+    if (book == null)
+    {
+        return Results.NotFound();
+    }
+    db.Books.Remove(book);
+    db.SaveChanges();
+    return Results.NoContent();
+
+});
+
+app.MapPut("/books/{firebaseKey}", (SimplyBooksBEndDbContext db, string firebaseKey, Book book) =>
+{
+    Book bookToUpdate = db.Books.SingleOrDefault(book => book.firebaseKey == firebaseKey);
+    if (bookToUpdate == null)
+    {
+        return Results.NotFound();
+    }
+    bookToUpdate.AuthorFirebaseKey = book.AuthorFirebaseKey;
+    bookToUpdate.title = book.title;
+    bookToUpdate.description = book.description;
+    bookToUpdate.image = book.image;
+    bookToUpdate.price = book.price;
+    bookToUpdate.sale = book.sale;
+
+    db.SaveChanges();
+    return Results.NoContent();
+});
+
+app.MapGet("user/books{userUid}", (SimplyBooksBEndDbContext db, string userUid) =>
+{
+    return db.Books
         .Where(a => a.UserUid == userUid)
         .ToList();
 });
 
+app.MapGet("user/authors{userUid}", (SimplyBooksBEndDbContext db, string userUid) =>
+{
+    return db.Authors
+        .Where(a => a.UserUid == userUid)
+        .ToList();
+});
 // .WithName("GetWeatherForecast")
 // .WithOpenApi();
 
