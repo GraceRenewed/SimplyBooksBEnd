@@ -135,14 +135,14 @@ app.MapPut("/books/{firebaseKey}", (SimplyBooksBEndDbContext db, string firebase
     return Results.NoContent();
 });
 
-app.MapGet("user/books{userUid}", (SimplyBooksBEndDbContext db, string userUid) =>
+app.MapGet("/user/books/{userUid}", (SimplyBooksBEndDbContext db, string userUid) =>
 {
     return db.Books
         .Where(a => a.UserUid == userUid)
         .ToList();
 });
 
-app.MapGet("user/authors{userUid}", (SimplyBooksBEndDbContext db, string userUid) =>
+app.MapGet("/user/authors/{userUid}", (SimplyBooksBEndDbContext db, string userUid) =>
 {
     return db.Authors
         .Where(a => a.UserUid == userUid)
