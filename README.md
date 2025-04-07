@@ -10,7 +10,7 @@
 </p>
 
 
-<p align="center">Simply Books i a app that allows users to save  books and authors. It is run by an API database.</p>
+<p align="center">Simply Books is an app that allows users to save books and authors. It is run by an API database.</p>
 
 
 <p align="center">
