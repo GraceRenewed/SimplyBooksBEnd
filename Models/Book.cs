@@ -9,7 +9,7 @@ public class Book
     public string firebaseKey { get; set; }
 
     [Required]
-    public string UserUid { get; set; }
+    public required string UserUid { get; set; }
     public User User { get; set; }
 
     public string AuthorFirebaseKey { get; set; }

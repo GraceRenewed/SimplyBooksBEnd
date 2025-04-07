@@ -33,29 +33,123 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
+app.MapGet("/authors", (SimplyBooksBEndDbContext db) =>
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+    return db.Authors.ToList();
+});
 
-app.MapGet("/weatherforecast", () =>
+app.MapGet("author/{firebaseKey}", (SimplyBooksBEndDbContext db, string firebaseKey) =>
 {
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast")
-.WithOpenApi();
+    return db.Authors
+    .Include(a => a.Books)
+    .Where(a => a.firebaseKey == firebaseKey)
+    .ToList();
+});
+
+app.MapPost("/authors", (SimplyBooksBEndDbContext db, Author author) =>
+{
+    db.Authors.Add(author);
+    db.SaveChanges();
+    return Results.Created($"/authors/{author.firebaseKey}", author);
+});
+
+app.MapDelete("/authors/{firebaseKey}", (SimplyBooksBEndDbContext db, string firebaseKey) =>
+{
+    Author author = db.Authors.SingleOrDefault(author => author.firebaseKey == firebaseKey);
+    if (author == null)
+    {
+        return Results.NotFound();
+    }
+    db.Authors.Remove(author);
+    db.SaveChanges();
+    return Results.NoContent();
+
+});
+
+app.MapPut("/authors/{firebaseKey}", (SimplyBooksBEndDbContext db, string firebaseKey, Author author) =>
+{
+    Author authorToUpdate = db.Authors.SingleOrDefault(author => author.firebaseKey == firebaseKey);
+    if (authorToUpdate == null)
+    {
+        return Results.NotFound();
+    }
+    authorToUpdate.first_name = author.first_name;
+    authorToUpdate.last_name = author.last_name;
+    authorToUpdate.email = author.email;
+    authorToUpdate.favorite = author.favorite;
+
+    db.SaveChanges();
+    return Results.NoContent();
+});
+
+app.MapGet("/books", (SimplyBooksBEndDbContext db) =>
+{
+    return db.Books
+        .Include(a => a.Author)
+        .ToList();
+});
+
+app.MapGet("book/{firebaseKey}", (SimplyBooksBEndDbContext db, string firebaseKey) =>
+{
+    return db.Books
+        .Include(a => a.Author)
+        .Where(a => a.firebaseKey == firebaseKey)
+        .ToList();
+});
+
+app.MapPost("/books", (SimplyBooksBEndDbContext db, Book book) =>
+{
+    db.Books.Add(book);
+    db.SaveChanges();
+    return Results.Created($"/books/{book.firebaseKey}", book);
+});
+
+app.MapDelete("/books/{firebaseKey}", (SimplyBooksBEndDbContext db, string firebaseKey) =>
+{
+    Book book = db.Books.SingleOrDefault(book => book.firebaseKey == firebaseKey);
+    if (book == null)
+    {
+        return Results.NotFound();
+    }
+    db.Books.Remove(book);
+    db.SaveChanges();
+    return Results.NoContent();
+
+});
+
+app.MapPut("/books/{firebaseKey}", (SimplyBooksBEndDbContext db, string firebaseKey, Book book) =>
+{
+    Book bookToUpdate = db.Books.SingleOrDefault(book => book.firebaseKey == firebaseKey);
+    if (bookToUpdate == null)
+    {
+        return Results.NotFound();
+    }
+    bookToUpdate.AuthorFirebaseKey = book.AuthorFirebaseKey;
+    bookToUpdate.title = book.title;
+    bookToUpdate.description = book.description;
+    bookToUpdate.image = book.image;
+    bookToUpdate.price = book.price;
+    bookToUpdate.sale = book.sale;
+
+    db.SaveChanges();
+    return Results.NoContent();
+});
+
+app.MapGet("user/books{userUid}", (SimplyBooksBEndDbContext db, string userUid) =>
+{
+    return db.Books
+        .Where(a => a.UserUid == userUid)
+        .ToList();
+});
+
+app.MapGet("user/authors{userUid}", (SimplyBooksBEndDbContext db, string userUid) =>
+{
+    return db.Authors
+        .Where(a => a.UserUid == userUid)
+        .ToList();
+});
+// .WithName("GetWeatherForecast")
+// .WithOpenApi();
 
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
