@@ -9,7 +9,6 @@ public class SimplyBooksBEndDbContext : DbContext
     public DbSet<Author> Authors { get; set; }
     public DbSet<Book> Books { get; set; }
     public DbSet<User> Users { get; set; }
-    
 
     public SimplyBooksBEndDbContext(DbContextOptions<SimplyBooksBEndDbContext> context) : base(context)
     {
